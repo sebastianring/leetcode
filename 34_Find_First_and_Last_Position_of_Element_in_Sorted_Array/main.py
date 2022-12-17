@@ -14,7 +14,6 @@ class Solution:
                 return [-1, -1]
  
         while l < r:
-            print(l, mid, r, nums[mid])
             if target == nums[mid]:
                 break
             elif target < nums[mid]:
