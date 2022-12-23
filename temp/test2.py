@@ -1,0 +1,4 @@
+print(0xffffffff)
+print(0x00000000)
+print(0x0000000e)
+

@@ -19,7 +19,6 @@ class Solution:
             # print(dic)
 
         # for j in range(0, 9, 3):
-
         #     # print(board[i][i:3], board[i+3][i:3], board[i+6][i:3])
         #     if isValidArray(board[j][j:], board[j+3][j:3], board[j+6][j+3]) == False:
         #         return False
