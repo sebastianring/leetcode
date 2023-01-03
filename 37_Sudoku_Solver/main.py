@@ -72,7 +72,8 @@ class Solution:
                     temp_list.append(r)
                     #print(f"tempnums: {temp_nums}")
                 else:
-                    temp_nums.remove(board[i][col])
+                    if board[i][col] in temp_nums:
+                        temp_nums.remove(board[i][col])
             
             return temp_list
 
