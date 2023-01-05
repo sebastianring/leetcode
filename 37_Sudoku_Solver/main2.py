@@ -149,8 +149,10 @@ class Solution:
             if does_equal_vals_exist((x, y), compared_coords):
                 vals = dic_score[(x,y)][0]
                 left_coords, common_coords = remove_equal_coords((x, y), vals, compared_coords)
-                find_common_areas(common_coords, left_coords)
-            
+                left_coords = find_common_areas(common_coords[0], common_coords[1:], left_coords)
+
+                print(vals, left_coords)
+
                 for val in vals:
                     for key in left_coords:
                         if val in dic_score[key][0]:
@@ -159,23 +161,37 @@ class Solution:
                                 removed_list.append(key)
                             else:
                                 dic_score[key][1] -= 1
+            
+            if len(removed_list) > 0 :
+                return removed_list
+            else:
+                return False
 
-            return removed_list       
+        # Check if coordinates share one and the same col, row or square
+        def coords_share_same_area(original, other):
+            ori_square = get_square(original[0], original[1])
+            col = original[0]
+            row = original[1]
+
+            # for o in other:
+            #     o_sqr = get_square(o[0], o[1])
+            #     if ori_square != ori_square:
+
+
+            return True
+                        
+
 
         # Compare one coords val to relevant coords, if equal values exist in another key, then return true, else return false
         def does_equal_vals_exist(one_coord: tuple, coords_list: list) -> bool:
             ctr = 1
             for coord in coords_list:
-                # print(f'ONE: {dic_score[one_coord][0]} COORD: {dic_score[coord][0]}')
                 if dic_score[one_coord][0] == dic_score[coord][0]:
                     ctr += 1
-                
+
             if ctr == len(dic_score[one_coord][0]):
-                print("YES TRUE BOI")
                 return True
             else:
-                print("NO FALSE BOI")
-                print(ctr, len(dic_score[one_coord][0]))
                 return False
         
         # Removes coordinates in a list which have the same values, part of delete_overlaps
@@ -187,21 +203,48 @@ class Solution:
                     commons.append(coords)
                 else:
                     left.append(coords)
-            # r_list = [coords for coords in coords_list if dic_score[coords][0] != vals]
 
             return left, commons
 
         # Find the common areas and remove the ones which are not common
-        def find_common_areas(common, left):
-            print("COMMON VALUES")
+        def find_common_areas(original, common, left):
+            row = False
+            col = False
+            sqr = False
+            ori_sqr = get_square(original[0], original[1])
             for c in common:
-                print(c)
+                c_sqr = get_square(c[0], c[1])
+                if c[0] == original[0]:
+                    col = True
+                if c[1] == original[1]:
+                    row = True
+                if ori_sqr == c_sqr:
+                    sqr = True
+            
+            #Remove if the square
+            print("<---------- REMOVAL STARTS HERE ------------>")
+            print(f"ROW: {row}, COL: {col}, SQR: {sqr}")
+            if sqr == False:
+                left = [val for val in left if get_square(val[0], val[1]) == ori_sqr]
+            print(f"LEFTSQR: {left}")
+            
+            if row == False:
+                left = [val for val in left if val[0] == original[0]]
+            print(f"LEFTROW: {left}")
+            
+            if col == False:
+                left = [val for val in left if val[1] == original[1]]
+            print(f"LEFTCOL: {left}")
 
-            print("LEFT VALUES")
-            for l in left:
-                
-                print(l)
+            print("LEFT BELOW")
+            print(f"ORIGINAL: {original}")
+            print(f"COMMON: {common}")
+            print(f"LEFT: {left}")
 
+            print("<---------- REMOVAL ENDS HERE ------------>")
+
+
+            return left
 
         # Initialize the score dictionary
         for y, row in enumerate(board):
@@ -212,7 +255,7 @@ class Solution:
         
         # Play the game
         game_on = True
-        low = 1
+        overlap_trigger = True
 
         while game_on:
             game_on = False
@@ -226,32 +269,41 @@ class Solution:
                     board[y][x] = coords_val
                     keys_to_del.append((x, y))
                     game_on = True
-
+                
             # Clean up activity
             for key in keys_to_del:
                 del dic_score[key]
+            
+            if overlap_trigger and game_on == False:
+                print("---------------SCORE-------------------------")
+                for k, v in dic_score.items():
+                    # print(k[1], k[0], v)
+                    print(k, v)
+                keys_to_del = []
+                game_on = True
+                overlap_trigger = False
 
-            # if game_on == False and len(dic_score) > 0:
-            #     for (x, y), v in dic_score.items():
-            #         delete_overlaps(x, y)
+                for (x, y) in dic_score.keys():
+                    del_keys = delete_overlaps(x, y)
+                    if del_keys:
+                        keys_to_del.append(del_keys)
                 
-            #     game_on = True
+                print(f"KEYS TO DEL: {keys_to_del}")
+
+                for key in keys_to_del:
+                    del dic_score[key]
+            
+            for row in board:
+                print(row)
+            print("---------------------------------------------")
+            
             
 
-            print("---------------SCORE-------------------------")
-            for k, v in dic_score.items():
-                # print(k[1], k[0], v)
-                print(k, v)
-        
-        # for (x, y), v in dic_score.items():
-        #     print(x, y)
-        #     r = delete_overlaps(x, y)
-        #     if len(r) > 0:
-        #         print(f'DELETING OVERLAPS AT {x} and {y}')
-        #         break
 
-        delete_overlaps(4, 1)
-        delete_overlaps(1, 0)
+        print("---------------SCORE-------------------------")
+        for k, v in dic_score.items():
+            # print(k[1], k[0], v)
+            print(k, v)
 
         for row in board:
             print(row)
@@ -259,11 +311,6 @@ class Solution:
         print("---------------SCORE-------------------------")
         for k, v in dic_score.items():
             print(k, v)
-
-        # coord = (4, 1)
-        # coords_list = get_affected_coords(coord[0], coord[1])
-        # for co in coords_list:
-        #     print(co)
         
         # print("---------------DIVIDER-------------------------")
 
@@ -276,10 +323,6 @@ class Solution:
         # for k, v in dic_score.items():
         #     print(k, v)
 
-
-
-
-
         # print("---------------COLUMN------------------------")
         # for k, v in dic_col.items():
         #     print(k, v)
@@ -289,39 +332,6 @@ class Solution:
         # print("---------------SQUARE------------------------")
         # for k, v in dic_sqr.items():
         #     print(k, v)
-
-
-        #dic_score = {(y,x): check_coords(x, y) for y, row in enumerate(board) for x, val in enumerate(row) if val == '.'}
-
-        # for y, row in enumerate(board):
-        #     for x, val in enumerate(row):
-        #         if val == '.':
-                    #check_coords(x, y)
-                    #print(f"{y, x}: {check_coords(x, y)}")
-
-                    # print(f"CHECK ROW: {check_row(y)[0]}")
-                    # print(f"CHECK COL: {check_col(x)[0]}")
-                    # print(f"CHECK ROW: {check_square(x, y)[0]}")
-                    # print(f"{y, x}: {check_list(check_row(y)[0], check_col(x)[0], check_square(x, y)[0])}")
-            
-        # print(dic_col)
-        # print(dic_row)
-        # print(dic_sqr)
-
-        # Update the dictionary
-        # def update_vals_dic(val: int, x: int, y: int) -> None:
-        #     if val in dic_col[x][0]:
-        #         dic_col[x][0].remove(val)
-        #         #dic_col[x][1] -= 1
-            
-        #     if val in dic_row[y]:
-        #         dic_row[y][0].remove(val)
-        #         # dic_row[y][1] -= 1
-            
-        #     square = get_square(x, y)
-        #     if val in dic_sqr[square][0]:
-        #         dic_sqr[square][0].remove(val)
-        #         #dic_sqr[square][1] -= 1
 
 
 
