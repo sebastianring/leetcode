@@ -1,9 +1,13 @@
+import time
+
+
 class Solution:
     def solveSudoku(self, board: list[list[str]]) -> None:
         """
         Do not return anything, modify board in-place instead.
         """
         # nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+        start_time = time.time()
        
         def defineSquare(x, y):
             x_factor = divmod(x, 3)[0]
@@ -78,9 +82,11 @@ class Solution:
                 ctr += 1
                 for area in areas:
                     for group in area:
+                        group.hiddenDouble()
+
                         elements_with_unique_num = group.getUniqueNumbers()
                         for element, val in elements_with_unique_num:
-                            # print(element.x, element.y, val)
+                            print(element.x, element.y, val)
                             setValue(element, val)
                             elements_to_be_deleted.append(element)
                             if game_on == False:
@@ -91,34 +97,20 @@ class Solution:
                     element.destroy()
 
                 elements_to_be_deleted = []
+
+
+        for ctr, element in enumerate(elements):
+            print(element.pos, element.getAvailableNumbers(), element.removed_numbers)
            
-            # if game_on == False:
-            #     for ctr, element in enumerate(elements):
-            #         # print(ctr, element.pos)
-            #         element.findOverlaps()
-            #         print(element.pos, element.getAvailableNumbers())
-
-        # for ctr, element in enumerate(elements):
-            # print(ctr, element.pos)
-            # element.findOverlaps()
-            # print(element.pos, element.getAvailableNumbers())
-           
-
-        # for area in areas:
-        #     for group in area:
-        #         group.getElementsWithOverlaps()
-                # print(group.type, group.number)
-                # for link in group.links:
-                #     r = link.getAvailableNumbers()
-                #     print(link.pos, r)
-       
-        print(sqrs[0].getElementsWithOverlaps())
-
 
         print("---------END BOARD-------------")
         for row in board:
             print(row)
-       
+
+
+        # Check performance
+        end_time = time.time()
+        print(end_time-start_time)
        
 class Element:
     def __init__(self, x, y, sqr):
@@ -143,43 +135,6 @@ class Element:
             temp_nums = [x for x in link.available_numbers if x in temp_nums]
 
         return temp_nums
-
-    def findOverlaps(self):
-        for link in self.link:
-            elements = [self]
-            available_numbers = self.getAvailableNumbers()
-
-            for elem in link.links:
-                if  available_numbers == elem.getAvailableNumbers() and self != elem:
-                    # print("WE GOT A MATCH")
-                    # print(self.pos, elem.pos)
-                    elements.append(elem)
-           
-            if len(self.getAvailableNumbers()) == len(elements):
-                print("WE GOT A SUPERMATCH - DELETE VALUES FROM OTHERS INSIDE THE SAME LINK")
-                # for elem in elements:
-                #     print(elem.getAvailableNumbers())
-            else:
-                return
-           
-            compare = []
-            for elem in link.links:
-                hit = True
-                # compare = [x for self_num in available_numbers for x in elem.getAvailableNumbers() if x not in self_num]
-                # compare = [x for x in elem.getAvailableNumbers() if x not in available_numbers]
-                for x in available_numbers:
-                    if x not in elem.getAvailableNumbers():
-                        hit = True
-                        break
-                if hit:
-                    compare.append(elem)
-            print("-------COMPARE PRINT---------")
-            for comp in compare:
-                print(comp.getAvailableNumbers())
-            print("-----------------------------")
-           
-        return
-
 
     def removeValueFromGroup(self, val):
         for link in self.link:
@@ -230,101 +185,64 @@ class Group:
         r_list = [(val[0], key) for key, val in number_count.items() if len(val) == 1]
 
         return r_list
-   
-    def getElementsWithOverlaps(self):
-        
 
-
+    def getNumberCount(self):
         # A dictionary which writes how many times a number is present in a group and which elements have that value
         # {
         #   3: 2, (2, 1), (2, 2)            - 3 can be used in two different elements,      (2, 1) and (2, 2)
         #   4: 3, (1, 2), (0, 0), (0, 1)    - 4 can be used in three different elements,    (1, 2), (0, 0), (0, 1)
         # }
-        # number_count = {}
 
-        # for link in self.links:
-        #     numbers = link.getAvailableNumbers()
-        #     for number in numbers:
-        #         check_number = number_count.get(number, None)
-        #         if check_number == None:
-        #             number_count[number] = [1]
-        #             number_count[number].append(link)
-        #         else:
-        #             number_count[number][0] += 1
-        #             number_count[number].append(link)
-        
-        # for k, values in number_count.items():
+        number_count = {}
 
-        # values_length_count = {values[0]: values[1:] for values in number_count.values()}
-        # Creating a dictionary composed of number if different elements and the elements:
-        # {
-        #   3: [Element1, Element2, Element3], [Element4, Element5, Element6]
-        # }
-        # This can then be used to compare the different lists inside the values - if they are the same, then the values they contain can be removed the other elements in the total list
+        for link in self.links:
+            numbers = link.getAvailableNumbers()
+            for number in numbers:
+                check_number = number_count.get(number, None)
+                if check_number == None:
+                    number_count[number] = [1]
+                    number_count[number].append(link)
+                else:
+                    number_count[number][0] += 1
+                    number_count[number].append(link)
 
-        # values_length_count = {values[0]: [vals[1:] for vals in number_count.values() if vals[0] == values[0]] for values in number_count.values()}
+        return number_count 
 
-        # First - check if the values inside have the same length
-        # for k, v in values_length_count.items():
-        #     # print(k)
-        #     for  in v:
+   
+    def hiddenDouble(self) -> None:
+        number_count = self.getNumberCount()
 
-        #         print(f"VALS: {vals}")            
-
-        # for k, values in number_count.items():
-        #     neededValuesForElement = values[0] + 1
-        #     for i in range(1, neededValuesForElement):
-        #         if neededValuesForElement != values[i].getAvailableNumbers():
-        #             break
+        for k, v in number_count.items():
+            ctr = 1
+            keys = [k]
+            for k2, v2 in number_count.items():
+                if k == k2 and k2:
+                    continue
+                else:
+                    if v[0] == v2[0]:
+                        ctr += 1
+                        keys.append(k2)
             
+            if v[0] == ctr:
+                hit = True
+                for key in keys:
+                    if number_count[key] != v:
+                        hit = False
+                        break 
 
-        # for k, values in number_count.items():
-        #     print(k)
-        #     for val in values:
-        #         print(val)
-            
+                if hit:
+                    temp_nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+                    for element in v:
+                        if type(element) == Element:
+                            element.removed_numbers = [num for num in temp_nums if num not in keys]
+                            print(element.removed_numbers)
 
-        return 0
-        # return number_count
+    def swordfishPairBool(self, ):
+        number_count = self.getNumberCount()
         
-       
 
 p = Solution()
 # print(p.solveSudoku(board = [["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]))
 print(p.solveSudoku(board = [[".",".","9","7","4","8",".",".","."],["7",".",".",".",".",".",".",".","."],[".","2",".","1",".","9",".",".","."],[".",".","7",".",".",".","2","4","."],[".","6","4",".","1",".","5","9","."],[".","9","8",".",".",".","3",".","."],[".",".",".","8",".","3",".","2","."],[".",".",".",".",".",".",".",".","6"],[".",".",".","2","7","5","9",".","."]]))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # @property
-    # def row(self):
-    #     return self.y
-   
-    # @property
-    # def col(self):
-    #     return self.x
-
-    # @property
-    # def link(self):
-    #     return self._link
-
-    # @link.setter
-    # def linkSetter(self, group):
-    #     self._link.append(group)
-
-
-   
-    # @property
-    # def available_numbers(self):
-    #     return self.available_numbers
