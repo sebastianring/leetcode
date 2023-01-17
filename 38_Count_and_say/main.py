@@ -4,5 +4,6 @@ class Solution:
 
 
 
+
 p = Solution()
 print(p.countAndSay(n=1)
