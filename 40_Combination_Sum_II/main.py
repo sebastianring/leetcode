@@ -64,11 +64,6 @@ class Solution:
         
         return r_list
 
-            
-
-
-
-
 p = Solution()
 print(p.combinationSum2(candidates = [2,5,2,1,2], target = 5))
 print(p.combinationSum2(candidates = [10,1,2,7,6,1,5], target = 8))
