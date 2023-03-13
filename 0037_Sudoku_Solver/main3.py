@@ -206,9 +206,8 @@ class Group:
                     number_count[number][0] += 1
                     number_count[number].append(link)
 
-        return number_count 
+        return number_count
 
-   
     def hiddenDouble(self) -> None:
         number_count = self.getNumberCount()
 
